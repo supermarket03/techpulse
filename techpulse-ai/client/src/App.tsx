@@ -65,9 +65,9 @@ export default function TechPulseDashboard() {
 
     try {
       const [buzzRes, stockRes, newsRes] = await Promise.all([
-        fetch(`http://localhost:4000/api/reddit-buzz?keyword=${symbol}`),
-        fetch(`http://localhost:4000/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
-        fetch(`http://localhost:4000/api/news-sentiment?symbol=${symbol.toUpperCase()}`),
+        fetch(`https://techpulse-production.up.railway.app/api/reddit-buzz?keyword=${symbol}`),
+        fetch(`https://techpulse-production.up.railway.app/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
+        fetch(`https://techpulse-production.up.railway.app/api/news-sentiment?symbol=${symbol.toUpperCase()}`),
       ])
 
       if (!buzzRes.ok || !stockRes.ok || !newsRes.ok) {
