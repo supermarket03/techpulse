@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "reddit.js",
   "scripts": {
-    "start": "python sentiment_service.py & node reddit.js",
+    "start": "python sentiment_service.py & node reddit.js & node stock.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
