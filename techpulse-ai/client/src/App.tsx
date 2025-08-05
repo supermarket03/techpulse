@@ -58,6 +58,10 @@ export default function TechPulseDashboard() {
   const [newsData, setNewsData] = useState<NewsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode')
+    return saved ? JSON.parse(saved) : false
+  })
 
   const fetchAllData = async (symbol: string) => {
     setLoading(true)
@@ -93,14 +97,23 @@ export default function TechPulseDashboard() {
     }
   }, [selectedStock])
 
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode))
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
   const handleStockSelect = (stock: { symbol: string }) => {
     setSelectedStock(stock.symbol)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-slate-50 to-blue-50'}`}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} shadow-sm border-b transition-colors duration-200`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -108,15 +121,24 @@ export default function TechPulseDashboard() {
                 <Activity className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">TechPulse AI</h1>
-                <p className="text-gray-600">Real-time Financial Intelligence Platform</p>
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>TechPulse AI</h1>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Real-time Financial Intelligence Platform</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock className="h-4 w-4" />
-              <span>
-                Last updated: {buzzData?.timestamp ? new Date(buzzData.timestamp).toLocaleTimeString() : "Never"}
-              </span>
+            <div className="flex items-center space-x-4">
+              <div className={`flex items-center space-x-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                <Clock className="h-4 w-4" />
+                <span>
+                  Last updated: {buzzData?.timestamp ? new Date(buzzData.timestamp).toLocaleTimeString() : "Never"}
+                </span>
+              </div>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-colors duration-200`}
+                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {darkMode ? '🌙' : '☀️'}
+              </button>
             </div>
           </div>
         </div>
