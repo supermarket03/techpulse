@@ -69,10 +69,11 @@ export default function TechPulseDashboard() {
 
     try {
       const [buzzRes, stockRes, newsRes] = await Promise.all([
-        fetch(`https://techpulse-production.up.railway.app/api/reddit-buzz?keyword=${symbol}`),
-        fetch(`https://techpulse-production.up.railway.app/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
-        fetch(`https://techpulse-production.up.railway.app/api/news-sentiment?symbol=${symbol.toUpperCase()}`),
-      ])
+  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/reddit-buzz?keyword=${symbol}`),
+  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
+  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/news-sentiment?symbol=${symbol.toUpperCase()}`),
+])
+
 
       if (!buzzRes.ok || !stockRes.ok || !newsRes.ok) {
         throw new Error("Failed to fetch data")

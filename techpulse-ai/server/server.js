@@ -20,8 +20,9 @@ const CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET || '763kiJmyIAU-tp5KZy7PK
 const USERNAME = process.env.REDDIT_USERNAME || 'savelol18';
 const PASSWORD = process.env.REDDIT_PASSWORD || 'Marktomi1';
 const USER_AGENT = process.env.REDDIT_USER_AGENT || 'rhungaryscrape/0.1 by savelol18';
-const FMP_API_KEY = process.env.FMP_API_KEY || 'bX6DW8z0fXwovmSD4RKwFrFCrj9vl2ST';
+const FMP_API_KEY = process.env.FMP_API_KEY || '3MFIo1QYBckd6gZ6Yr0ZyHTgXrCaPluj';
 const NEWS_API_KEY = process.env.NEWS_API_KEY || 'a1a73e0f5d4e471eab33bdc0c6f88fa2';
+const ALPHA_KEY = process.env.ALPHA_VANTAGE_KEY || 'BP0Y76FQ4H6O56LO';
 
 let accessToken = null;
 let tokenExpiry = null;
@@ -143,7 +144,7 @@ app.get('/api/reddit-buzz', async (req, res) => {
   }
 });
 
-// Stock fundamentals endpoint
+// Stock fundamentals endpoint using Alpha Vantage
 app.get('/api/stock-fundamentals', async (req, res) => {
   try {
     const { symbol } = req.query;
@@ -151,26 +152,43 @@ app.get('/api/stock-fundamentals', async (req, res) => {
       return res.status(400).json({ error: 'Symbol parameter is required' });
     }
 
-    const [quote, profile] = await Promise.all([
-      axios.get(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${FMP_API_KEY}`),
-      axios.get(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${FMP_API_KEY}`)
-    ]);
+    // Fetch company overview
+    const profileRes = await axios.get('https://www.alphavantage.co/query', {
+      params: {
+        function: 'OVERVIEW',
+        symbol: symbol,
+        apikey: ALPHA_KEY
+      }
+    });
 
-    if (!quote.data[0] || !profile.data[0]) {
+    // Fetch real-time quote
+    const quoteRes = await axios.get('https://www.alphavantage.co/query', {
+      params: {
+        function: 'GLOBAL_QUOTE',
+        symbol: symbol,
+        apikey: ALPHA_KEY
+      }
+    });
+
+    // Check if data exists
+    if (!profileRes.data || !quoteRes.data['Global Quote']) {
       return res.status(404).json({ error: 'Stock data not found' });
     }
 
+    // Combine overview and quote data
     const stockData = {
-      ...quote.data[0],
-      ...profile.data[0]
+      ...profileRes.data,
+      ...quoteRes.data['Global Quote']
     };
 
     res.json(stockData);
+
   } catch (error) {
-    console.error('Error fetching stock data:', error);
+    console.error('Error fetching Alpha Vantage data:', error.message);
     res.status(500).json({ error: 'Failed to fetch stock data' });
   }
 });
+
 
 // News sentiment endpoint
 app.get('/api/news-sentiment', async (req, res) => {

@@ -1,0 +1,29 @@
+FROM node:18-slim
+
+# Install Python + pip safely
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 python3-pip ca-certificates gnupg && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and install Node dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy Python requirements if any (we’ll check if you have a requirements.txt)
+COPY sentiment_service.py ./
+
+# Install FinBERT + other Python deps
+RUN pip3 install torch transformers pandas
+
+# Copy the rest of the server code
+COPY . .
+
+# Expose the port for Cloud Run
+ENV PORT=8080
+EXPOSE 8080
+
+# Start the Node server
+CMD ["node", "server.js"]
