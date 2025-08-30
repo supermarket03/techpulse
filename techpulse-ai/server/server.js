@@ -5,7 +5,7 @@ const natural = require('natural');
 const aposToLexForm = require('apos-to-lex-form');
 const { WordTokenizer } = natural;
 const tokenizer = new WordTokenizer();
-const { loadStockDatabase, searchStocks } = require('./stock');
+const { getFundamentals, searchStocks } = require('./stock');
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -144,7 +144,7 @@ app.get('/api/reddit-buzz', async (req, res) => {
   }
 });
 
-// Stock fundamentals endpoint using Alpha Vantage
+// Stock fundamentals endpoint using Yahoo Finance
 app.get('/api/stock-fundamentals', async (req, res) => {
   try {
     const { symbol } = req.query;
@@ -152,39 +152,10 @@ app.get('/api/stock-fundamentals', async (req, res) => {
       return res.status(400).json({ error: 'Symbol parameter is required' });
     }
 
-    // Fetch company overview
-    const profileRes = await axios.get('https://www.alphavantage.co/query', {
-      params: {
-        function: 'OVERVIEW',
-        symbol: symbol,
-        apikey: ALPHA_KEY
-      }
-    });
-
-    // Fetch real-time quote
-    const quoteRes = await axios.get('https://www.alphavantage.co/query', {
-      params: {
-        function: 'GLOBAL_QUOTE',
-        symbol: symbol,
-        apikey: ALPHA_KEY
-      }
-    });
-
-    // Check if data exists
-    if (!profileRes.data || !quoteRes.data['Global Quote']) {
-      return res.status(404).json({ error: 'Stock data not found' });
-    }
-
-    // Combine overview and quote data
-    const stockData = {
-      ...profileRes.data,
-      ...quoteRes.data['Global Quote']
-    };
-
-    res.json(stockData);
-
+    const data = await getFundamentals(symbol.toUpperCase());
+    res.json(data);
   } catch (error) {
-    console.error('Error fetching Alpha Vantage data:', error.message);
+    console.error(`Error fetching fundamentals for ${req.query.symbol}:`, error.message);
     res.status(500).json({ error: 'Failed to fetch stock data' });
   }
 });
@@ -273,5 +244,4 @@ app.get('/health', (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  loadStockDatabase(); // Load stock database on startup
 });

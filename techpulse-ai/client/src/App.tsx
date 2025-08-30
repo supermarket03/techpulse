@@ -1,7 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { TrendingUp, Activity, Newspaper, AlertTriangle, Clock } from "lucide-react"
 import StockSelector from "./components/stock-selector"
 import BuzzMetrics from "./components/buzz-metrics"
 import StockFundamentals from "./components/stock-fundamentals"
@@ -79,11 +77,30 @@ export default function TechPulseDashboard() {
         throw new Error("Failed to fetch data")
       }
 
-      const [buzz, stock, news] = await Promise.all([buzzRes.json(), stockRes.json(), newsRes.json()])
+      const [buzz, stock, news] = await Promise.all([
+  buzzRes.json(),
+  stockRes.json(),
+  newsRes.json()
+])
 
-      setBuzzData(buzz)
-      setStockData(stock)
-      setNewsData(news)
+setBuzzData(buzz)
+setNewsData(news)
+
+// Map Yahoo Finance fields to your frontend StockData type
+const mappedStock = {
+  symbol: stock.price?.symbol || selectedStock.toUpperCase(),
+  name: stock.price?.longName || stock.summaryProfile?.longBusinessSummary || selectedStock.toUpperCase(),
+  price: stock.price?.regularMarketPrice || 0,
+  change: stock.price?.regularMarketChange || 0,
+  changePercent: stock.price?.regularMarketChangePercent
+    ? (stock.price.regularMarketChangePercent * 100).toFixed(2) + "%"
+    : "0%",
+  marketCap: stock.price?.marketCap || 0,
+  peRatio: stock.financialData?.forwardPE || "N/A",
+}
+
+setStockData(mappedStock)
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
       console.error("Error fetching data:", err)
