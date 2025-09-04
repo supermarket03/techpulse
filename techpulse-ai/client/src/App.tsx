@@ -1,11 +1,11 @@
-"use client"
-
+import { useState, useEffect } from "react"
 import StockSelector from "./components/stock-selector"
 import BuzzMetrics from "./components/buzz-metrics"
 import StockFundamentals from "./components/stock-fundamentals"
 import HypeAnalysis from "./components/hype-analysis"
 import NewsSentiment from "./components/news-sentiment"
 import LoadingSpinner from "./components/loading-spinner"
+import "./App.css"
 
 interface BuzzData {
   keyword: string
@@ -49,7 +49,7 @@ interface NewsData {
   totalArticles: number
 }
 
-export default function TechPulseDashboard() {
+function App() {
   const [selectedStock, setSelectedStock] = useState("")
   const [buzzData, setBuzzData] = useState<BuzzData | null>(null)
   const [stockData, setStockData] = useState<StockData | null>(null)
@@ -57,8 +57,11 @@ export default function TechPulseDashboard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode')
-    return saved ? JSON.parse(saved) : false
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode')
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
   })
 
   const fetchAllData = async (symbol: string) => {
@@ -66,47 +69,50 @@ export default function TechPulseDashboard() {
     setError(null)
 
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://techpulse-server-716503352822.us-central1.run.app'
       const [buzzRes, stockRes, newsRes] = await Promise.all([
-  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/reddit-buzz?keyword=${symbol}`),
-  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
-  fetch(`https://techpulse-server-716503352822.us-central1.run.app/api/news-sentiment?symbol=${symbol.toUpperCase()}`),
-])
-
+        fetch(`${apiUrl}/api/reddit-buzz?keyword=${symbol}`),
+        fetch(`${apiUrl}/api/stock-fundamentals?symbol=${symbol.toUpperCase()}`),
+        fetch(`${apiUrl}/api/news-sentiment?symbol=${symbol.toUpperCase()}`)
+      ])
 
       if (!buzzRes.ok || !stockRes.ok || !newsRes.ok) {
         throw new Error("Failed to fetch data")
       }
 
       const [buzz, stock, news] = await Promise.all([
-  buzzRes.json(),
-  stockRes.json(),
-  newsRes.json()
-])
+        buzzRes.json(),
+        stockRes.json(),
+        newsRes.json()
+      ])
 
-setBuzzData(buzz)
-setNewsData(news)
+      setBuzzData(buzz)
+      setNewsData(news)
 
-// Map Yahoo Finance fields to your frontend StockData type
-const mappedStock = {
-  symbol: stock.price?.symbol || selectedStock.toUpperCase(),
-  name: stock.price?.longName || stock.summaryProfile?.longBusinessSummary || selectedStock.toUpperCase(),
-  price: stock.price?.regularMarketPrice || 0,
-  change: stock.price?.regularMarketChange || 0,
-  changePercent: stock.price?.regularMarketChangePercent
-    ? (stock.price.regularMarketChangePercent * 100).toFixed(2) + "%"
-    : "0%",
-  marketCap: stock.price?.marketCap || 0,
-  peRatio: stock.financialData?.forwardPE || "N/A",
-}
-
-setStockData(mappedStock)
-
+      const mappedStock: StockData = {
+        symbol: stock.price?.symbol || symbol.toUpperCase(),
+        name: stock.price?.longName || stock.summaryProfile?.longBusinessSummary || symbol.toUpperCase(),
+        price: stock.price?.regularMarketPrice || 0,
+        change: stock.price?.regularMarketChange || 0,
+        changePercent: stock.price?.regularMarketChangePercent
+          ? (stock.price.regularMarketChangePercent * 100).toFixed(2) + "%"
+          : "0%",
+        marketCap: stock.price?.marketCap || 0,
+        peRatio: stock.financialData?.forwardPE || "N/A"
+      }
+      
+      setStockData(mappedStock)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
       console.error("Error fetching data:", err)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleStockSelect = (stock: { symbol: string }) => {
+    setSelectedStock(stock.symbol)
+    fetchAllData(stock.symbol)
   }
 
   useEffect(() => {
@@ -116,154 +122,48 @@ setStockData(mappedStock)
   }, [selectedStock])
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode))
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('darkMode', JSON.stringify(darkMode))
+      if (darkMode) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
   }, [darkMode])
 
-  const handleStockSelect = (stock: { symbol: string }) => {
-    setSelectedStock(stock.symbol)
-  }
-
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-slate-50 to-blue-50'}`}>
-      {/* Header */}
-      <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} shadow-sm border-b transition-colors duration-200`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <Activity className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>TechPulse AI</h1>
-                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Real-time Financial Intelligence Platform</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className={`flex items-center space-x-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-                <Clock className="h-4 w-4" />
-                <span>
-                  Last updated: {buzzData?.timestamp ? new Date(buzzData.timestamp).toLocaleTimeString() : "Never"}
-                </span>
-              </div>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-colors duration-200`}
-                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {darkMode ? '🌙' : '☀️'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className={`min-h-screen ${darkMode ? 'dark bg-dark-bg text-white' : 'bg-gray-50'}`}>
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">TechPulse AI</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">Real-time stock sentiment and hype analysis</p>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stock Selector */}
-        <div className="mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
-              Select Stock to Analyze
-            </h2>
-            <StockSelector onSelectStock={handleStockSelect} defaultValue={selectedStock} />
-          </div>
-        </div>
+        <StockSelector onSelectStock={handleStockSelect} defaultValue={selectedStock} />
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <LoadingSpinner />
-          </div>
+        {loading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <div className="text-red-500 text-center p-4">{error}</div>
+        ) : (
+          <>
+            {stockData && <StockFundamentals data={stockData} />}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {buzzData && <BuzzMetrics data={buzzData} />}
+              {buzzData?.hypeAnalysis && (
+                <HypeAnalysis 
+                  data={buzzData.hypeAnalysis} 
+                  stockSymbol={selectedStock} 
+                />
+              )}
+            </div>
+            {newsData && <NewsSentiment data={newsData} />}
+          </>
         )}
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
-            <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-              <h3 className="text-red-800 font-medium">Error Loading Data</h3>
-            </div>
-            <p className="text-red-700 mt-2">{error}</p>
-          </div>
-        )}
-
-        {/* Main Dashboard */}
-        {!loading && !error && buzzData && stockData && newsData && (
-          <div className="space-y-8">
-            {/* Key Metrics Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <BuzzMetrics data={buzzData} />
-              <StockFundamentals data={stockData} />
-              <NewsSentiment data={newsData} />
-            </div>
-
-            {/* Hype Analysis */}
-            {buzzData.hypeAnalysis && <HypeAnalysis data={buzzData.hypeAnalysis} stockSymbol={selectedStock} />}
-
-            {/* Detailed News Analysis */}
-            <div className="bg-white rounded-xl shadow-sm border">
-              <div className="p-6 border-b">
-                <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <Newspaper className="h-5 w-5 mr-2 text-purple-600" />
-                  Recent News Headlines
-                </h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {newsData.articles.slice(0, 8).map((article, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
-                    >
-                      <div
-                        className={`flex-shrink-0 w-3 h-3 rounded-full mt-2 ${
-                          article.sentiment === "positive"
-                            ? "bg-green-500"
-                            : article.sentiment === "negative"
-                              ? "bg-red-500"
-                              : "bg-gray-400"
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <a
-                          href={article.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-900 hover:text-blue-600 font-medium line-clamp-2"
-                        >
-                          {article.title}
-                        </a>
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                          <span>{article.source}</span>
-                          <span>•</span>
-                          <span>{new Date(article.published).toLocaleDateString()}</span>
-                          <span>•</span>
-                          <span
-                            className={`font-medium ${
-                              article.sentiment === "positive"
-                                ? "text-green-600"
-                                : article.sentiment === "negative"
-                                  ? "text-red-600"
-                                  : "text-gray-600"
-                            }`}
-                          >
-                            {article.sentiment.toUpperCase()} ({(article.confidence * 100).toFixed(0)}%)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   )
 }
+
+export default App

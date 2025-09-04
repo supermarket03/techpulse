@@ -25,10 +25,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip
 RUN pip install torch transformers pandas
 
-# Copy the rest of the server code
+# Copy only necessary files (excluding .env)
 COPY . .
 
-# Set port for Cloud Run
+# Set default port for Cloud Run
 ENV PORT=8080
 EXPOSE 8080
 
