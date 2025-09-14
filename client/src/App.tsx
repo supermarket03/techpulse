@@ -86,7 +86,14 @@ function App() {
         newsRes.json()
       ])
 
-      setBuzzData(buzz)
+const transformedBuzz: BuzzData = {
+  keyword: symbol,
+  buzzCount: buzz.metrics?.totalMentions || 0,
+  upvotesTotal: buzz.metrics?.totalScore || 0,
+  timestamp: buzz.timestamp
+}
+
+setBuzzData(transformedBuzz)
       setNewsData(news)
 
       const mappedStock: StockData = {
