@@ -90,16 +90,16 @@ function App() {
       setNewsData(news)
 
       const mappedStock: StockData = {
-        symbol: stock.price?.symbol || symbol.toUpperCase(),
-        name: stock.price?.longName || stock.summaryProfile?.longBusinessSummary || symbol.toUpperCase(),
-        price: stock.price?.regularMarketPrice || 0,
-        change: stock.price?.regularMarketChange || 0,
-        changePercent: stock.price?.regularMarketChangePercent
-          ? (stock.price.regularMarketChangePercent * 100).toFixed(2) + "%"
-          : "0%",
-        marketCap: stock.price?.marketCap || 0,
-        peRatio: stock.financialData?.forwardPE || "N/A"
-      }
+  symbol: stock.symbol || symbol.toUpperCase(),
+  name: stock.companyName || stock.name || symbol.toUpperCase(),
+  price: stock.price || 0,
+  change: stock.change || 0,
+  changePercent: stock.changesPercentage 
+    ? stock.changesPercentage.toFixed(2) + "%" 
+    : "0%",
+  marketCap: stock.marketCap || 0,
+  peRatio: stock.pe || "N/A"
+}
       
       setStockData(mappedStock)
     } catch (err) {
