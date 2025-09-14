@@ -30,7 +30,7 @@ export default function BuzzMetrics({ data }: BuzzMetricsProps) {
             <MessageSquare className="h-4 w-4 text-gray-400 mr-2" />
             <span className="text-sm text-gray-600">Total Posts</span>
           </div>
-          <span className="text-2xl font-bold text-gray-900">{data.buzzCount.toLocaleString()}</span>
+          <span className="text-2xl font-bold text-gray-900">{typeof data.buzzCount === 'number' ? data.buzzCount.toLocaleString() : '0'}</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -38,7 +38,7 @@ export default function BuzzMetrics({ data }: BuzzMetricsProps) {
             <ThumbsUp className="h-4 w-4 text-gray-400 mr-2" />
             <span className="text-sm text-gray-600">Total Upvotes</span>
           </div>
-          <span className="text-2xl font-bold text-gray-900">{data.upvotesTotal.toLocaleString()}</span>
+          <span className="text-2xl font-bold text-gray-900">{typeof data.upvotesTotal === 'number' ? data.upvotesTotal.toLocaleString() : '0'}</span>
         </div>
 
         <div className="pt-4 border-t">
