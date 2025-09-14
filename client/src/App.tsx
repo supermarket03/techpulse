@@ -5,7 +5,7 @@ import StockFundamentals from "./components/stock-fundamentals"
 import HypeAnalysis from "./components/hype-analysis"
 import NewsSentiment from "./components/news-sentiment"
 import LoadingSpinner from "./components/loading-spinner"
-import "./App.css"
+import "./index.css"
 
 interface BuzzData {
   keyword: string
