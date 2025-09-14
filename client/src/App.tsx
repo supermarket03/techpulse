@@ -28,6 +28,16 @@ interface StockData {
   changePercent: string
   marketCap: number
   peRatio: number | string
+  dayLow: number
+  dayHigh: number
+  yearHigh: number
+  yearLow: number
+  volume: number
+  avgVolume: number
+  eps: number
+  beta: number
+  sector: string
+  industry: string
 }
 
 interface NewsData {
@@ -113,7 +123,17 @@ setBuzzData(transformedBuzz)
     ? stock.changesPercentage.toFixed(2) + "%" 
     : "0%",
   marketCap: stock.marketCap || 0,
-  peRatio: stock.pe || "N/A"
+  peRatio: stock.pe || "N/A",
+  dayLow: stock.dayLow || 0,
+  dayHigh: stock.dayHigh || 0,
+  yearHigh: stock.yearHigh || 0,
+  yearLow: stock.yearLow || 0,
+  volume: stock.volume || 0,
+  avgVolume: stock.avgVolume || 0,
+  eps: stock.eps || 0,
+  beta: stock.beta || 0,
+  sector: stock.sector || "",
+  industry: stock.industry || ""
 }
       
       setStockData(mappedStock)

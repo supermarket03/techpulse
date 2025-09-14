@@ -10,6 +10,16 @@ interface StockData {
   changePercent: string
   marketCap: number
   peRatio: number | string
+  dayLow: number
+  dayHigh: number
+  yearHigh: number
+  yearLow: number
+  volume: number
+  avgVolume: number
+  eps: number
+  beta: number
+  sector: string
+  industry: string
 }
 
 interface StockFundamentalsProps {
@@ -59,6 +69,36 @@ export default function StockFundamentals({ data }: StockFundamentalsProps) {
             {typeof data.peRatio === "number" ? data.peRatio.toFixed(1) : data.peRatio}
           </span>
         </div>
+<div className="flex items-center justify-between">
+  <span className="text-sm text-gray-600">EPS</span>
+  <span className="text-lg font-semibold text-gray-900">${data.eps.toFixed(2)}</span>
+</div>
+
+<div className="flex items-center justify-between">
+  <span className="text-sm text-gray-600">Beta</span>
+  <span className="text-lg font-semibold text-gray-900">{data.beta.toFixed(2)}</span>
+</div>
+
+<div className="pt-4 border-t">
+  <div className="text-xs text-gray-500 mb-2">Day Range</div>
+  <div className="flex justify-between text-sm">
+    <span>${data.dayLow.toFixed(2)}</span>
+    <span>${data.dayHigh.toFixed(2)}</span>
+  </div>
+</div>
+
+<div>
+  <div className="text-xs text-gray-500 mb-2">52 Week Range</div>
+  <div className="flex justify-between text-sm">
+    <span>${data.yearLow.toFixed(2)}</span>
+    <span>${data.yearHigh.toFixed(2)}</span>
+  </div>
+</div>
+
+<div className="flex items-center justify-between">
+  <span className="text-sm text-gray-600">Volume</span>
+  <span className="text-sm font-medium">{(data.volume / 1e6).toFixed(1)}M</span>
+</div>
       </div>
     </div>
   )
