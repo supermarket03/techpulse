@@ -48,6 +48,14 @@ interface NewsData {
   }
   totalArticles: number
 }
+interface Article {
+  title: string
+  link: string
+  published: string
+  source: string
+  sentiment: "positive" | "negative" | "neutral"
+  confidence: number
+}
 
 function App() {
   const [selectedStock, setSelectedStock] = useState("")

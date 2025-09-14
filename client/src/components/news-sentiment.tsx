@@ -1,5 +1,6 @@
 "use client"
-
+import { useState } from "react"
+import ArticleCard from "./article-cards"
 import { Newspaper, TrendingUp, TrendingDown, Minus } from "lucide-react"
 
 interface NewsData {
@@ -26,6 +27,9 @@ interface NewsSentimentProps {
 }
 
 export default function NewsSentiment({ data }: NewsSentimentProps) {
+  const [showAllArticles, setShowAllArticles] = useState(false)
+  const articlesToShow = showAllArticles ? data.articles : data.articles.slice(0, 6)
+
   const getSentimentIcon = () => {
     switch (data.overallSentiment) {
       case "Positive":
@@ -88,6 +92,27 @@ export default function NewsSentiment({ data }: NewsSentimentProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 pt-6 border-t">
+        <h4 className="text-md font-semibold text-gray-900 mb-4">Recent Articles</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {articlesToShow.map((article, index) => (
+            <ArticleCard key={index} article={article} />
+          ))}
+        </div>
+
+        {data.articles.length > 6 && (
+          <div className="text-center mt-4">
+            <button 
+              onClick={() => setShowAllArticles(!showAllArticles)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              {showAllArticles ? 'Show Less' : `Show All ${data.articles.length} Articles`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
